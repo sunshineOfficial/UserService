@@ -3,7 +3,8 @@ WORKDIR /app
 EXPOSE 80
 
 COPY . .
+RUN chmod +x ./start.sh
 
 RUN go install -mod vendor
 
-ENTRYPOINT ["go", "build", "user-service"]
+ENTRYPOINT ./start.sh
