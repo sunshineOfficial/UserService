@@ -1,0 +1,6 @@
+{
+  "port": 80,
+  "database": {
+    "postgres": "postgres://postgres:1@db/user-service"
+  }
+}
