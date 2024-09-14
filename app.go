@@ -8,7 +8,10 @@ import (
 	"user-service/api"
 	"user-service/config"
 	"user-service/db"
+	dbuser "user-service/db/user"
 	"user-service/server"
+	"user-service/service"
+	"user-service/service/user"
 
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
@@ -26,7 +29,8 @@ type App struct {
 
 	postgres *sqlx.DB
 
-	server server.Server
+	server      server.Server
+	userService service.User
 }
 
 func NewApp(ctx context.Context, log *zap.Logger, settings config.Settings) *App {
@@ -59,10 +63,14 @@ func (a *App) InitDatabases() error {
 }
 
 func (a *App) InitServices() {
+	userRepository := dbuser.NewRepository(a.postgres)
+
+	a.userService = user.NewService(userRepository)
 }
 
 func (a *App) InitServer() {
 	sb := api.NewServerBuilder(a.ctx, a.log, a.settings)
+	sb.AddUser(a.userService)
 	a.server = sb.Build()
 }
 

@@ -1,7 +1,7 @@
 -- +goose Up
 create table if not exists users
 (
-    id      serial primary key,
+    id      uuid primary key default gen_random_uuid(),
     email   text unique not null,
     name    text,
     surname text
