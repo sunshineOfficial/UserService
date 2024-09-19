@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"os"
-	"os/signal"
 	"user-service/config"
+	"user-service/os"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -21,6 +20,8 @@ func main() {
 		panic(err)
 	}
 
+	log.Debug("Service up")
+
 	settings, err := config.NewSettings()
 	if err != nil {
 		log.Error("Failed to load settings", zap.Error(err))
@@ -34,24 +35,21 @@ func main() {
 		return
 	}
 
-	app.InitServices()
+	if err = app.InitServices(); err != nil {
+		log.Error("Failed to init services", zap.Error(err))
+		return
+	}
+
 	app.InitServer()
 
 	app.Start()
-	stop := getStopSignal()
-	<-stop
 
-	app.Stop()
+	os.WaitTerminate(mainCtx, app.Stop)
+
+	log.Debug("Service down")
 }
 
 func configureDecimal() {
 	decimal.DivisionPrecision = 2
 	decimal.MarshalJSONWithoutQuotes = true
-}
-
-func getStopSignal() <-chan os.Signal {
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
-
-	return stop
 }

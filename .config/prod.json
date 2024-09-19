@@ -2,5 +2,13 @@
   "port": 80,
   "database": {
     "postgres": "postgres://postgres:1@db/user-service"
+  },
+  "kafka": {
+    "brokers": [
+      "kafka:9092"
+    ],
+    "topics": {
+      "user_tickets": "UserTickets"
+    }
   }
 }

@@ -135,3 +135,26 @@ func DeleteUserHandler(userService service.User, log *zap.Logger) http.HandlerFu
 		return
 	}
 }
+
+func GetUserTicketsByUserIdHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idRaw := chi.URLParam(r, "id")
+		id, err := uuid.Parse(idRaw)
+		if err != nil {
+			render.Status(r, http.StatusBadRequest)
+			render.PlainText(w, r, "wrong id")
+			return
+		}
+
+		result, err := userService.GetUserTicketsByUserId(r.Context(), log, id)
+		if err != nil {
+			render.Status(r, http.StatusBadRequest)
+			render.PlainText(w, r, err.Error())
+			return
+		}
+
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, result)
+		return
+	}
+}

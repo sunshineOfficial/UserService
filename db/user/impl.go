@@ -86,3 +86,26 @@ func (r Impl) DeleteUser(ctx context.Context, id uuid.UUID) error {
 
 	return err
 }
+
+//go:embed sql/get_user_tickets_by_user_id.sql
+var getUserTicketsByUserIdSql string
+
+func (r Impl) GetUserTicketsByUserId(ctx context.Context, userId uuid.UUID) ([]DbUserTicket, error) {
+	userTickets := make([]DbUserTicket, 0)
+
+	err := r.db.SelectContext(ctx, &userTickets, getUserTicketsByUserIdSql, userId)
+	if errors.Is(err, sql.ErrNoRows) {
+		return userTickets, nil
+	}
+
+	return userTickets, err
+}
+
+//go:embed sql/add_user_ticket.sql
+var addUserTicketSql string
+
+func (r Impl) AddUserTicket(ctx context.Context, userTicket DbUserTicket) error {
+	_, err := r.db.NamedExecContext(ctx, addUserTicketSql, userTicket)
+
+	return err
+}

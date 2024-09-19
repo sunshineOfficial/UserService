@@ -9,6 +9,7 @@ import (
 	"user-service/config"
 	"user-service/db"
 	dbuser "user-service/db/user"
+	"user-service/kafka"
 	"user-service/server"
 	"user-service/service"
 	"user-service/service/user"
@@ -31,6 +32,8 @@ type App struct {
 
 	server      server.Server
 	userService service.User
+	kafka       kafka.Kafka
+	consumer    kafka.Consumer
 }
 
 func NewApp(ctx context.Context, log *zap.Logger, settings config.Settings) *App {
@@ -62,10 +65,22 @@ func (a *App) InitDatabases() error {
 	return nil
 }
 
-func (a *App) InitServices() {
+func (a *App) InitServices() error {
+	var err error
+
+	a.kafka = kafka.NewKafka(a.settings.Kafka.Brokers)
+	a.consumer, err = a.kafka.Consumer(a.log, func() (context.Context, context.CancelFunc) {
+		return context.WithCancel(a.ctx)
+	}, kafka.WithTopic(a.settings.Kafka.Topics.UserTickets))
+	if err != nil {
+		return fmt.Errorf("could not create kafka consumer: %w", err)
+	}
+
 	userRepository := dbuser.NewRepository(a.postgres)
 
 	a.userService = user.NewService(userRepository)
+
+	return nil
 }
 
 func (a *App) InitServer() {
@@ -76,10 +91,15 @@ func (a *App) InitServer() {
 
 func (a *App) Start() {
 	a.server.Start()
+	a.consumer.Subscribe(a.userService.CreateSubscriberForBookMessage(a.ctx, a.log))
 }
 
-func (a *App) Stop() {
+func (a *App) Stop(ctx context.Context) {
 	a.server.Stop()
+
+	if err := a.consumer.Close(ctx); err != nil {
+		a.log.Error("could not close kafka consumer", zap.Error(err))
+	}
 
 	if err := a.postgres.Close(); err != nil {
 		a.log.Error("could not close postgres connection", zap.Error(err))

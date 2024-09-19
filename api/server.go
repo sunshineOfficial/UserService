@@ -40,6 +40,7 @@ func (s *ServerBuilder) AddUser(user service.User) {
 	s.router.Post("/user", handlers.AddUserHandler(user, s.log))
 	s.router.Put("/user/{id}", handlers.UpdateUserHandler(user, s.log))
 	s.router.Delete("/user/{id}", handlers.DeleteUserHandler(user, s.log))
+	s.router.Get("/user/{id}/tickets", handlers.GetUserTicketsByUserIdHandler(user, s.log))
 }
 
 func (s *ServerBuilder) Build() server.Server {

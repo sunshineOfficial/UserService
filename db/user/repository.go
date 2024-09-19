@@ -12,4 +12,6 @@ type Repository interface {
 	AddUser(ctx context.Context, user DbUser) (uuid.UUID, error)
 	UpdateUser(ctx context.Context, user DbUser) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	GetUserTicketsByUserId(ctx context.Context, userId uuid.UUID) ([]DbUserTicket, error)
+	AddUserTicket(ctx context.Context, userTicket DbUserTicket) error
 }
