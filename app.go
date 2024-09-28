@@ -85,6 +85,7 @@ func (a *App) InitServices() error {
 
 func (a *App) InitServer() {
 	sb := api.NewServerBuilder(a.ctx, a.log, a.settings)
+	sb.AddSwagger()
 	sb.AddUser(a.userService)
 	a.server = sb.Build()
 }

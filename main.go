@@ -9,6 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
+//	@title			user-service API
+//	@version		1.0
+//	@description	Микросервис пользователей.
 func main() {
 	configureDecimal()
 

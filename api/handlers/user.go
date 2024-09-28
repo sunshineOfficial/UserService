@@ -13,13 +13,24 @@ import (
 	"go.uber.org/zap"
 )
 
+// GetUserByIdHandler получает пользователя по ID
+//
+//	@Summary	Получает пользователя по ID
+//	@Tags		user
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"User ID"
+//	@Success	200	{object}	pkg.User
+//	@Success	204	{object}	string
+//	@Failure	400	{object}	string
+//	@Router		/user/{id} [get]
 func GetUserByIdHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idRaw := chi.URLParam(r, "id")
 		id, err := uuid.Parse(idRaw)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, "wrong id")
+			render.JSON(w, r, "wrong id")
 			return
 		}
 
@@ -27,12 +38,12 @@ func GetUserByIdHandler(userService service.User, log *zap.Logger) http.HandlerF
 		if err != nil {
 			if errors.Is(err, user.ErrCouldNotFindUser) {
 				render.Status(r, http.StatusNoContent)
-				render.PlainText(w, r, err.Error())
+				render.JSON(w, r, err.Error())
 				return
 			}
 
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 
@@ -42,12 +53,21 @@ func GetUserByIdHandler(userService service.User, log *zap.Logger) http.HandlerF
 	}
 }
 
+// GetUsersHandler получает всех пользователей по ID
+//
+//	@Summary	Получает всех пользователей по ID
+//	@Tags		user
+//	@Accept		json
+//	@Produce	json
+//	@Success	200	{object}	[]pkg.User
+//	@Failure	400	{object}	string
+//	@Router		/user [get]
 func GetUsersHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		result, err := userService.GetUsers(r.Context(), log)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 
@@ -57,36 +77,57 @@ func GetUsersHandler(userService service.User, log *zap.Logger) http.HandlerFunc
 	}
 }
 
+// AddUserHandler добавляет нового пользователя
+//
+//	@Summary	Добавляет нового пользователя
+//	@Tags		user
+//	@Accept		json
+//	@Produce	json
+//	@Param		user	body		pkg.User	true	"User"
+//	@Success	200		{object}	string
+//	@Failure	400		{object}	string
+//	@Router		/user [post]
 func AddUserHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var u pkg.User
 		err := render.DecodeJSON(r.Body, &u)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 
 		id, err := userService.AddUser(r.Context(), log, u)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 
 		render.Status(r, http.StatusOK)
-		render.PlainText(w, r, id.String())
+		render.JSON(w, r, id.String())
 		return
 	}
 }
 
+// UpdateUserHandler обновляет пользователя
+//
+//	@Summary	Обновляет пользователя
+//	@Tags		user
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string		true	"User ID"
+//	@Param		user	body		pkg.User	true	"User"
+//	@Success	200		{object}	string
+//	@Failure	400		{object}	string
+//	@Router		/user [put]
 func UpdateUserHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idRaw := chi.URLParam(r, "id")
 		id, err := uuid.Parse(idRaw)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, "wrong id")
+			render.JSON(w, r, "wrong id")
 			return
 		}
 
@@ -94,7 +135,7 @@ func UpdateUserHandler(userService service.User, log *zap.Logger) http.HandlerFu
 		err = render.DecodeJSON(r.Body, &u)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 
@@ -103,53 +144,73 @@ func UpdateUserHandler(userService service.User, log *zap.Logger) http.HandlerFu
 		err = userService.UpdateUser(r.Context(), log, u)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 
 		render.Status(r, http.StatusOK)
-		render.PlainText(w, r, "ok")
+		render.JSON(w, r, "ok")
 		return
 	}
 }
 
+// DeleteUserHandler удаляет пользователя по ID
+//
+//	@Summary	Удаляет пользователя по ID
+//	@Tags		user
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"User ID"
+//	@Success	200	{object}	string
+//	@Failure	400	{object}	string
+//	@Router		/user/{id} [delete]
 func DeleteUserHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idRaw := chi.URLParam(r, "id")
 		id, err := uuid.Parse(idRaw)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, "wrong id")
+			render.JSON(w, r, "wrong id")
 			return
 		}
 
 		err = userService.DeleteUser(r.Context(), log, id)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 
 		render.Status(r, http.StatusOK)
-		render.PlainText(w, r, "ok")
+		render.JSON(w, r, "ok")
 		return
 	}
 }
 
+// GetUserTicketsByUserIdHandler получает билеты пользователя по его ID
+//
+//	@Summary	Получает билеты пользователя по его ID
+//	@Tags		user
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"User ID"
+//	@Success	200	{object}	[]pkg.UserTicket
+//	@Failure	400	{object}	string
+//	@Router		/user/{id}/tickets [get]
 func GetUserTicketsByUserIdHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idRaw := chi.URLParam(r, "id")
 		id, err := uuid.Parse(idRaw)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, "wrong id")
+			render.JSON(w, r, "wrong id")
 			return
 		}
 
 		result, err := userService.GetUserTicketsByUserId(r.Context(), log, id)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			render.PlainText(w, r, err.Error())
+			render.JSON(w, r, err.Error())
 			return
 		}
 

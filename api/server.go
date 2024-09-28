@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"user-service/api/handlers"
 	"user-service/config"
+	_ "user-service/docs"
 	"user-service/server"
 	"user-service/service"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	swagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
 )
 
@@ -32,6 +34,10 @@ func NewServerBuilder(ctx context.Context, log *zap.Logger, settings config.Sett
 		server: server.NewHTTPServer(ctx, log, fmt.Sprintf(":%d", settings.Port)),
 		log:    log,
 	}
+}
+
+func (s *ServerBuilder) AddSwagger() {
+	s.router.Get("/swagger/*", swagger.Handler(swagger.URL("/swagger/doc.json")))
 }
 
 func (s *ServerBuilder) AddUser(user service.User) {

@@ -7,4 +7,4 @@ RUN chmod +x ./start.sh
 
 RUN go install -mod vendor
 
-ENTRYPOINT ./start.sh
+ENTRYPOINT ["./start.sh"]
