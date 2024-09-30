@@ -2,7 +2,7 @@
 create table if not exists user_tickets
 (
     user_id   uuid references users (id) on delete cascade,
-    ticket_id uuid not null,
+    ticket_id varchar(48) not null,
     constraint pk_user_tickets primary key (user_id, ticket_id)
 );
 

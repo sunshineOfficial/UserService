@@ -11,5 +11,5 @@ type DbUser struct {
 
 type DbUserTicket struct {
 	UserId   uuid.UUID `db:"user_id"`
-	TicketId uuid.UUID `db:"ticket_id"`
+	TicketId string    `db:"ticket_id"`
 }

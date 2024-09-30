@@ -11,10 +11,10 @@ type User struct {
 
 type UserTicket struct {
 	UserId   uuid.UUID `json:"UserId"`
-	TicketId uuid.UUID `json:"TicketId"`
+	TicketId string    `json:"TicketId"`
 }
 
 type BookMessage struct {
 	UserId   uuid.UUID `json:"UserId"`
-	TicketId uuid.UUID `json:"TicketId"`
+	TicketId string    `json:"TicketId"`
 }
