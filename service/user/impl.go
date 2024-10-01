@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"user-service/db/user"
 	"user-service/kafka"
 	"user-service/pkg"
@@ -121,5 +122,7 @@ func (s *Impl) CreateSubscriberForBookMessage(ctx context.Context, log *zap.Logg
 			log.Error("could not add user ticket", zap.Error(err))
 			return
 		}
+
+		log.Debug(fmt.Sprintf("consumed book message: %v", msg))
 	}
 }
