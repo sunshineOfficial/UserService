@@ -2,16 +2,19 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"user-service/pkg"
 	"user-service/service"
 	"user-service/service/user"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/render"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
+	"github.com/sunshineOfficial/golib/gohttp/gorouter"
 )
+
+type idVars struct {
+	id string
+}
 
 // GetUserByIdHandler получает пользователя по ID
 //
@@ -24,32 +27,29 @@ import (
 //	@Success	204	{object}	string
 //	@Failure	400	{object}	string
 //	@Router		/user/{id} [get]
-func GetUserByIdHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		idRaw := chi.URLParam(r, "id")
-		id, err := uuid.Parse(idRaw)
-		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, "wrong id")
-			return
+func GetUserByIdHandler(userService service.User) gorouter.Handler {
+	return func(c gorouter.Context) error {
+		var vars idVars
+		if err := c.Vars(&vars); err != nil {
+			return fmt.Errorf("parse vars: %w", err)
 		}
 
-		result, err := userService.GetUserById(r.Context(), log, id)
+		id, err := uuid.Parse(vars.id)
+		if err != nil {
+			return fmt.Errorf("parse id: %w", err)
+		}
+
+		result, err := userService.GetUserById(c.Ctx(), c.Log(), id)
 		if err != nil {
 			if errors.Is(err, user.ErrCouldNotFindUser) {
-				render.Status(r, http.StatusNoContent)
-				render.JSON(w, r, err.Error())
-				return
+				c.Write(http.StatusNoContent)
+				return nil
 			}
 
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+			return fmt.Errorf("get user by id: %w", err)
 		}
 
-		render.Status(r, http.StatusOK)
-		render.JSON(w, r, result)
-		return
+		return c.WriteJson(http.StatusOK, result)
 	}
 }
 
@@ -62,18 +62,14 @@ func GetUserByIdHandler(userService service.User, log *zap.Logger) http.HandlerF
 //	@Success	200	{object}	[]pkg.User
 //	@Failure	400	{object}	string
 //	@Router		/user [get]
-func GetUsersHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		result, err := userService.GetUsers(r.Context(), log)
+func GetUsersHandler(userService service.User) gorouter.Handler {
+	return func(c gorouter.Context) error {
+		result, err := userService.GetUsers(c.Ctx(), c.Log())
 		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+			return fmt.Errorf("get users: %w", err)
 		}
 
-		render.Status(r, http.StatusOK)
-		render.JSON(w, r, result)
-		return
+		return c.WriteJson(http.StatusOK, result)
 	}
 }
 
@@ -87,26 +83,19 @@ func GetUsersHandler(userService service.User, log *zap.Logger) http.HandlerFunc
 //	@Success	200		{object}	string
 //	@Failure	400		{object}	string
 //	@Router		/user [post]
-func AddUserHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func AddUserHandler(userService service.User) gorouter.Handler {
+	return func(c gorouter.Context) error {
 		var u pkg.User
-		err := render.DecodeJSON(r.Body, &u)
-		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+		if err := c.ReadJson(&u); err != nil {
+			return fmt.Errorf("parse json: %w", err)
 		}
 
-		id, err := userService.AddUser(r.Context(), log, u)
+		id, err := userService.AddUser(c.Ctx(), c.Log(), u)
 		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+			return fmt.Errorf("add user: %w", err)
 		}
 
-		render.Status(r, http.StatusOK)
-		render.JSON(w, r, id.String())
-		return
+		return c.WriteJson(http.StatusOK, id.String())
 	}
 }
 
@@ -121,36 +110,32 @@ func AddUserHandler(userService service.User, log *zap.Logger) http.HandlerFunc 
 //	@Success	200		{object}	string
 //	@Failure	400		{object}	string
 //	@Router		/user [put]
-func UpdateUserHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		idRaw := chi.URLParam(r, "id")
-		id, err := uuid.Parse(idRaw)
+func UpdateUserHandler(userService service.User) gorouter.Handler {
+	return func(c gorouter.Context) error {
+		var vars idVars
+		if err := c.Vars(&vars); err != nil {
+			return fmt.Errorf("parse vars: %w", err)
+		}
+
+		id, err := uuid.Parse(vars.id)
 		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, "wrong id")
-			return
+			return fmt.Errorf("parse id: %w", err)
 		}
 
 		var u pkg.User
-		err = render.DecodeJSON(r.Body, &u)
-		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+		if err = c.ReadJson(&u); err != nil {
+			return fmt.Errorf("parse json: %w", err)
 		}
 
 		u.Id = id
 
-		err = userService.UpdateUser(r.Context(), log, u)
+		err = userService.UpdateUser(c.Ctx(), c.Log(), u)
 		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+			return fmt.Errorf("update user: %w", err)
 		}
 
-		render.Status(r, http.StatusOK)
-		render.JSON(w, r, "ok")
-		return
+		c.Write(http.StatusOK)
+		return nil
 	}
 }
 
@@ -164,26 +149,25 @@ func UpdateUserHandler(userService service.User, log *zap.Logger) http.HandlerFu
 //	@Success	200	{object}	string
 //	@Failure	400	{object}	string
 //	@Router		/user/{id} [delete]
-func DeleteUserHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		idRaw := chi.URLParam(r, "id")
-		id, err := uuid.Parse(idRaw)
-		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, "wrong id")
-			return
+func DeleteUserHandler(userService service.User) gorouter.Handler {
+	return func(c gorouter.Context) error {
+		var vars idVars
+		if err := c.Vars(&vars); err != nil {
+			return fmt.Errorf("parse vars: %w", err)
 		}
 
-		err = userService.DeleteUser(r.Context(), log, id)
+		id, err := uuid.Parse(vars.id)
 		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+			return fmt.Errorf("parse id: %w", err)
 		}
 
-		render.Status(r, http.StatusOK)
-		render.JSON(w, r, "ok")
-		return
+		err = userService.DeleteUser(c.Ctx(), c.Log(), id)
+		if err != nil {
+			return fmt.Errorf("delete user: %w", err)
+		}
+
+		c.Write(http.StatusOK)
+		return nil
 	}
 }
 
@@ -197,25 +181,23 @@ func DeleteUserHandler(userService service.User, log *zap.Logger) http.HandlerFu
 //	@Success	200	{object}	[]pkg.UserTicket
 //	@Failure	400	{object}	string
 //	@Router		/user/{id}/tickets [get]
-func GetUserTicketsByUserIdHandler(userService service.User, log *zap.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		idRaw := chi.URLParam(r, "id")
-		id, err := uuid.Parse(idRaw)
-		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, "wrong id")
-			return
+func GetUserTicketsByUserIdHandler(userService service.User) gorouter.Handler {
+	return func(c gorouter.Context) error {
+		var vars idVars
+		if err := c.Vars(&vars); err != nil {
+			return fmt.Errorf("parse vars: %w", err)
 		}
 
-		result, err := userService.GetUserTicketsByUserId(r.Context(), log, id)
+		id, err := uuid.Parse(vars.id)
 		if err != nil {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, err.Error())
-			return
+			return fmt.Errorf("parse id: %w", err)
 		}
 
-		render.Status(r, http.StatusOK)
-		render.JSON(w, r, result)
-		return
+		result, err := userService.GetUserTicketsByUserId(c.Ctx(), c.Log(), id)
+		if err != nil {
+			return fmt.Errorf("get user tickets: %w", err)
+		}
+
+		return c.WriteJson(http.StatusOK, result)
 	}
 }

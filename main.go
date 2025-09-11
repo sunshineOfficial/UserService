@@ -3,43 +3,39 @@ package main
 import (
 	"context"
 	"user-service/config"
-	"user-service/os"
 
 	"github.com/shopspring/decimal"
-	"go.uber.org/zap"
+	"github.com/sunshineOfficial/golib/golog"
+	"github.com/sunshineOfficial/golib/goos"
 )
 
-//	@title			user-service API
-//	@version		1.0
-//	@description	Микросервис пользователей.
+// @title		user-service API
+// @version		1.0
+// @description	Микросервис пользователей.
 func main() {
 	configureDecimal()
+
+	log := golog.NewLogger("user-service")
+	log.Debug("service up")
 
 	mainCtx, cancelMainCtx := context.WithCancel(context.Background())
 	defer cancelMainCtx()
 
-	log, err := zap.NewDevelopment(zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
+	settings, err := config.Parse()
 	if err != nil {
-		panic(err)
-	}
-
-	log.Debug("Service up")
-
-	settings, err := config.NewSettings()
-	if err != nil {
-		log.Error("Failed to load settings", zap.Error(err))
+		log.Errorf("failed to load settings: %v", err)
 		return
 	}
 
 	app := NewApp(mainCtx, log, settings)
 
 	if err = app.InitDatabases(); err != nil {
-		log.Error("Failed to init databases", zap.Error(err))
+		log.Errorf("failed to init databases: %v", err)
 		return
 	}
 
 	if err = app.InitServices(); err != nil {
-		log.Error("Failed to init services", zap.Error(err))
+		log.Errorf("failed to init services: %v", err)
 		return
 	}
 
@@ -47,9 +43,9 @@ func main() {
 
 	app.Start()
 
-	os.WaitTerminate(mainCtx, app.Stop)
+	goos.WaitTerminate(mainCtx, app.Stop)
 
-	log.Debug("Service down")
+	log.Debug("service down")
 }
 
 func configureDecimal() {

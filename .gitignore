@@ -1,6 +1,3 @@
-# Created by https://www.toptal.com/developers/gitignore/api/go,goland,macos,windows
-# Edit at https://www.toptal.com/developers/gitignore?templates=go,goland,macos,windows
-
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
@@ -18,8 +15,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Dependency directories
+vendor/
 
 # Go workspace file
 go.work
@@ -196,5 +193,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-# End of https://www.toptal.com/developers/gitignore/api/go,goland,macos,windows
