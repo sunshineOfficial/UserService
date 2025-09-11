@@ -24,8 +24,8 @@ type idVars struct {
 //	@Produce	json
 //	@Param		id	path		string	true	"User ID"
 //	@Success	200	{object}	pkg.User
-//	@Success	204	{object}	string
-//	@Failure	400	{object}	string
+//	@Success	204
+//	@Failure	400
 //	@Router		/user/{id} [get]
 func GetUserByIdHandler(userService service.User) gorouter.Handler {
 	return func(c gorouter.Context) error {
@@ -60,7 +60,7 @@ func GetUserByIdHandler(userService service.User) gorouter.Handler {
 //	@Accept		json
 //	@Produce	json
 //	@Success	200	{object}	[]pkg.User
-//	@Failure	400	{object}	string
+//	@Failure	400
 //	@Router		/user [get]
 func GetUsersHandler(userService service.User) gorouter.Handler {
 	return func(c gorouter.Context) error {
@@ -81,7 +81,7 @@ func GetUsersHandler(userService service.User) gorouter.Handler {
 //	@Produce	json
 //	@Param		user	body		pkg.User	true	"User"
 //	@Success	200		{object}	string
-//	@Failure	400		{object}	string
+//	@Failure	400
 //	@Router		/user [post]
 func AddUserHandler(userService service.User) gorouter.Handler {
 	return func(c gorouter.Context) error {
@@ -105,10 +105,10 @@ func AddUserHandler(userService service.User) gorouter.Handler {
 //	@Tags		user
 //	@Accept		json
 //	@Produce	json
-//	@Param		id		path		string		true	"User ID"
-//	@Param		user	body		pkg.User	true	"User"
-//	@Success	200		{object}	string
-//	@Failure	400		{object}	string
+//	@Param		id		path	string		true	"User ID"
+//	@Param		user	body	pkg.User	true	"User"
+//	@Success	200
+//	@Failure	400
 //	@Router		/user [put]
 func UpdateUserHandler(userService service.User) gorouter.Handler {
 	return func(c gorouter.Context) error {
@@ -145,9 +145,9 @@ func UpdateUserHandler(userService service.User) gorouter.Handler {
 //	@Tags		user
 //	@Accept		json
 //	@Produce	json
-//	@Param		id	path		string	true	"User ID"
-//	@Success	200	{object}	string
-//	@Failure	400	{object}	string
+//	@Param		id	path	string	true	"User ID"
+//	@Success	200
+//	@Failure	400
 //	@Router		/user/{id} [delete]
 func DeleteUserHandler(userService service.User) gorouter.Handler {
 	return func(c gorouter.Context) error {
@@ -179,7 +179,7 @@ func DeleteUserHandler(userService service.User) gorouter.Handler {
 //	@Produce	json
 //	@Param		id	path		string	true	"User ID"
 //	@Success	200	{object}	[]pkg.UserTicket
-//	@Failure	400	{object}	string
+//	@Failure	400
 //	@Router		/user/{id}/tickets [get]
 func GetUserTicketsByUserIdHandler(userService service.User) gorouter.Handler {
 	return func(c gorouter.Context) error {

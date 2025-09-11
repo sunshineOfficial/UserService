@@ -38,8 +38,6 @@ paths:
             type: array
         "400":
           description: Bad Request
-          schema:
-            type: string
       summary: Получает всех пользователей по ID
       tags:
       - user
@@ -62,8 +60,6 @@ paths:
             type: string
         "400":
           description: Bad Request
-          schema:
-            type: string
       summary: Добавляет нового пользователя
       tags:
       - user
@@ -87,12 +83,8 @@ paths:
       responses:
         "200":
           description: OK
-          schema:
-            type: string
         "400":
           description: Bad Request
-          schema:
-            type: string
       summary: Обновляет пользователя
       tags:
       - user
@@ -111,12 +103,8 @@ paths:
       responses:
         "200":
           description: OK
-          schema:
-            type: string
         "400":
           description: Bad Request
-          schema:
-            type: string
       summary: Удаляет пользователя по ID
       tags:
       - user
@@ -138,12 +126,8 @@ paths:
             $ref: '#/definitions/pkg.User'
         "204":
           description: No Content
-          schema:
-            type: string
         "400":
           description: Bad Request
-          schema:
-            type: string
       summary: Получает пользователя по ID
       tags:
       - user
@@ -168,8 +152,6 @@ paths:
             type: array
         "400":
           description: Bad Request
-          schema:
-            type: string
       summary: Получает билеты пользователя по его ID
       tags:
       - user

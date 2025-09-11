@@ -37,7 +37,7 @@ func (s *ServerBuilder) AddDebug() {
 }
 
 func (s *ServerBuilder) AddSwagger() {
-	s.router.HandleGet("/swagger/*", gorouter.WrapStdLibFunc(swagger.Handler(swagger.URL("/swagger/doc.json"))))
+	s.router.PathPrefix("/swagger/").Handler(gorouter.WrapStdLibFunc(swagger.Handler(swagger.URL("/swagger/doc.json"))))
 }
 
 func (s *ServerBuilder) AddUser(user service.User) {
