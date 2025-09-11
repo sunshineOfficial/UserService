@@ -17,11 +17,12 @@ services:
   db:
     image: postgres:latest
     volumes:
-      - db-data:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data/pgdata
     environment:
-      POSTGRES_DB: "user-service"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "1"
+      POSTGRES_DB: user-service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5433:5432"
     networks:
@@ -77,4 +78,4 @@ networks:
     driver: bridge
 
 volumes:
-  db-data:
+  pgdata:
