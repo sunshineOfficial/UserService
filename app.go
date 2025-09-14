@@ -8,9 +8,11 @@ import (
 	"user-service/api"
 	"user-service/config"
 	dbuser "user-service/db/user"
+	"user-service/graph"
 	"user-service/service"
 	"user-service/service/user"
 
+	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/jmoiron/sqlx"
 	"github.com/sunshineOfficial/golib/db"
 	"github.com/sunshineOfficial/golib/gohttp/goserver"
@@ -34,6 +36,9 @@ type App struct {
 	userService service.User
 	kafka       gokafka.Kafka
 	consumer    gokafka.Consumer
+
+	graphServer   *handler.Server
+	graphResolver *graph.Resolver
 }
 
 func NewApp(ctx context.Context, log golog.Logger, settings config.Settings) *App {
@@ -80,14 +85,17 @@ func (a *App) InitServices() error {
 
 	a.userService = user.NewService(userRepository)
 
+	a.graphResolver = graph.NewResolver(userRepository)
+
 	return nil
 }
 
 func (a *App) InitServer() {
-	sb := api.NewServerBuilder(a.ctx, a.log, a.settings)
+	sb := api.NewServerBuilder(a.ctx, a.log, a.settings, a.graphResolver)
 	sb.AddDebug()
 	sb.AddSwagger()
 	sb.AddUser(a.userService)
+	sb.AddGraphQL()
 	a.server = sb.Build()
 }
 
